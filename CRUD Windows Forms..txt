@@ -1,0 +1,191 @@
+MODEL CLIENTES
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CRUDTrabalho
+{
+    internal class Clientes
+    {
+        public int Id {  get; set; }
+        public string Name { get; set; }
+        public string Endereco { get; set; }    
+        public string Email { get; set; }
+        public string Senha { get; set; }
+
+    }
+}
+
+
+---------------------------------------------------------------
+
+CRUD BOTÃOS E COMANDOS
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.CodeDom;
+
+namespace CRUDTrabalho
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        SqlConnection sqlCon = null;
+        private string strCon = @"Data Source=DESKTOP-STVCRJT\SQLSERVER2022;
+        Integrated Security=SSPI;
+        Initial Catalog=ContatosBD";
+        private string strSql = string.Empty;
+        private void tsbInserir_Click(object sender, EventArgs e)
+        {
+            strSql = "insert into Cliente(Id,Nome,Endereco,Email,Cpf,Senha) values (@Id,@Nome,@Endereco,@Email,@Cpf,@Senha)";
+            sqlCon = new SqlConnection(strCon);
+            SqlCommand comando = new SqlCommand(strSql, sqlCon);    
+
+            comando.Parameters.Add("@Id", SqlDbType.Int).Value = txtId.Text;
+            comando.Parameters.Add("@Nome", SqlDbType.VarChar).Value = txtNome.Text;
+            comando.Parameters.Add("@Endereco", SqlDbType.VarChar).Value = txtEndereco.Text;
+            comando.Parameters.Add("@Email", SqlDbType.VarChar).Value = txtEmail.Text;
+            comando.Parameters.Add("@Cpf", SqlDbType.VarChar).Value = mskCpf.Text;
+            comando.Parameters.Add("@Senha", SqlDbType.VarChar).Value = txtSenha.Text;
+
+            try
+            {
+                sqlCon.Open();
+                comando.ExecuteNonQuery();
+                MessageBox.Show("Cadastro realizado com Sucesso!");
+            }
+
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                sqlCon.Close();
+            }
+
+
+        }
+
+        private void tsbBuscar_Click(object sender, EventArgs e)
+        {
+            strSql = "select * from Cliente where Id=@Id";
+            sqlCon = new SqlConnection(strCon);
+            SqlCommand comando = new SqlCommand(strSql, sqlCon);
+            
+            comando.Parameters.Add("Id",SqlDbType.Int).Value = tstIdBuscar.Text;
+
+            try
+            {
+                if(tstIdBuscar.Text == string.Empty)
+                {
+                    throw new Exception("Você precisa digitar um Id!");
+                }
+                sqlCon.Open();
+                SqlDataReader dr = comando.ExecuteReader();
+
+                if(dr.HasRows == false)
+                {
+                    throw new Exception("Id não cadastrado!");
+                }
+                dr.Read();
+                txtId.Text = Convert.ToString(dr["Id"]);
+                txtNome.Text = Convert.ToString(dr["Nome"]);
+                txtEndereco.Text = Convert.ToString(dr["Endereco"]);
+                txtEmail.Text = Convert.ToString(dr["Email"]);
+                mskCpf.Text = Convert.ToString(dr["Cpf"]);
+                txtSenha.Text = Convert.ToString(dr["Senha"]);
+            }
+
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                sqlCon.Close();
+            }
+        }
+
+        private void tsbAtualizar_Click(object sender, EventArgs e)
+        {
+            strSql = "update Cliente set Id=@Id, Nome=@Nome, Endereco=@Endereco, Email=@Email, Cpf=@Cpf, Senha=@Senha where Id=@IdBuscar";
+            sqlCon = new SqlConnection(strCon);
+            SqlCommand comando = new SqlCommand(strSql, sqlCon);
+
+            comando.Parameters.Add("@IdBuscar", SqlDbType.Int).Value = tstIdBuscar.Text;
+
+            comando.Parameters.Add("@Id", SqlDbType.Int).Value = txtId.Text;
+            comando.Parameters.Add("@Nome", SqlDbType.VarChar).Value = txtNome.Text;
+            comando.Parameters.Add("@Endereco", SqlDbType.VarChar).Value = txtEndereco.Text;
+            comando.Parameters.Add("@Email", SqlDbType.VarChar).Value = txtEmail.Text;
+            comando.Parameters.Add("@Cpf", SqlDbType.VarChar).Value = mskCpf.Text;
+            comando.Parameters.Add("@Senha", SqlDbType.VarChar).Value = txtSenha.Text;
+
+            try
+            {
+                sqlCon.Open();
+                comando.ExecuteNonQuery();
+                MessageBox.Show("Cadastro atualizado com sucesso!");
+            }
+
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                sqlCon.Close();
+            }
+
+        }
+
+        private void tsbDeletar_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Deseja realmente excluir esse cliente?", "Cuidado", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.No) 
+            {
+                MessageBox.Show("Operação cancelada!");
+            }
+            else
+            {
+                strSql = "delete from Cliente where Id=@Id";
+                sqlCon = new SqlConnection(strCon);
+                SqlCommand comando = new SqlCommand(strSql, sqlCon);
+
+                comando.Parameters.Add("@Id", SqlDbType.Int).Value=tstIdBuscar.Text;
+
+                try
+                {
+                    sqlCon.Open();
+                    comando.ExecuteNonQuery();
+                    MessageBox.Show("Cliente deletado com sucesso!");
+                }
+
+                catch (Exception ex )
+                {
+                    MessageBox.Show(ex.Message);
+                }
+
+                finally
+                {
+                    sqlCon.Close();
+                }
+            }
+        }
+    }
+}
